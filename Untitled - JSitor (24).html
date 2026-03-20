@@ -1,0 +1,158 @@
+<!doctype html><html><head></head><body><!DOCTYPE html>
+<html>
+<head>
+  <title>⚡ Surprise Proxy</title>
+
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #00f7ff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      text-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff;
+    }
+
+    .box {
+      margin: 20px auto;
+      padding: 20px;
+      width: 80%;
+      border-radius: 15px;
+      background: rgba(0,0,0,0.6);
+      box-shadow: 0 0 15px #00f7ff;
+    }
+
+    input {
+      width: 60%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      outline: none;
+      background: black;
+      color: #00f7ff;
+      box-shadow: 0 0 10px #00f7ff inset;
+    }
+
+    button {
+      padding: 12px 20px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 10px;
+      background: black;
+      color: #00f7ff;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #00f7ff, 0 0 40px #00f7ff;
+    }
+
+    iframe {
+      width: 90%;
+      height: 500px;
+      margin-top: 20px;
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 0 20px #00f7ff;
+    }
+
+    .tabs {
+      margin-top: 15px;
+    }
+
+    .tab {
+      display: inline-block;
+      padding: 8px 15px;
+      margin: 5px;
+      border-radius: 10px;
+      background: black;
+      box-shadow: 0 0 10px #00f7ff;
+      cursor: pointer;
+    }
+
+    .toggle {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>⚡ Surprise Proxy ⚡</h1>
+
+<div class="box">
+  <input id="url" placeholder="Enter a URL...">
+  <button onclick="go()">Launch 🚀</button>
+
+  <div class="toggle">
+    <label>
+      <input type="checkbox" id="stealth">
+      Open in about:blank (Stealth Mode)
+    </label>
+  </div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<iframe id="frame"></iframe>
+
+<script>
+let tabCount = 0;
+
+function go() {
+  let url = document.getElementById("url").value;
+
+  if (!url.startsWith("http")) {
+    url = "https://" + url;
+  }
+
+  const stealth = document.getElementById("stealth").checked;
+
+  if (stealth) {
+    openStealth(url);
+  } else {
+    document.getElementById("frame").src = url;
+  }
+
+  createTab(url);
+}
+
+function openStealth(url) {
+  let newTab = window.open("about:blank", "_blank");
+
+  newTab.document.write(`
+    <title>New Tab</title>
+    <style>
+      body { margin:0; background:black; }
+      iframe {
+        width:100vw;
+        height:100vh;
+        border:none;
+      }
+    </style>
+    <iframe src="${url}"></iframe>
+  `);
+}
+
+function createTab(url) {
+  tabCount++;
+  let tab = document.createElement("div");
+  tab.className = "tab";
+  tab.innerText = "Tab " + tabCount;
+
+  tab.onclick = () => {
+    document.getElementById("frame").src = url;
+  };
+
+  document.getElementById("tabs").appendChild(tab);
+}
+</script>
+
+</body>
+</html></body><html>
