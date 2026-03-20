@@ -1,0 +1,319 @@
+<!doctype html><html><head></head><body><!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Experiment 404 - Home Screen</title>
+	<style>
+		body {
+			margin: 0;
+			font-family: Arial, sans-serif;
+			background: #05050a;
+			color: white;
+		}
+
+		/* URL Bar and Settings */
+		#topbar {
+			display: flex;
+			padding: 10px;
+			background: #0f0f1f;
+			box-shadow: 0 0 20px #00f7ff;
+			position: fixed;
+			top: 0;
+			width: 100%;
+			z-index: 100;
+		}
+
+		input {
+			flex: 1;
+			padding: 10px;
+			background: #111;
+			border: none;
+			color: white;
+			border-radius: 6px;
+		}
+
+		button {
+			margin-left: 5px;
+			padding: 10px;
+			background: #00f7ff;
+			border: none;
+			border-radius: 6px;
+			cursor: pointer;
+		}
+
+		/* HOME SCREEN */
+		#homeScreen {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			text-align: center;
+			position: absolute;
+			top: 10%;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
+		#homeScreen h1 {
+			font-size: 4rem;
+			color: #00f7ff;
+			animation: glow 1.5s ease-in-out infinite alternate;
+		}
+
+		#homeScreen h3 {
+			color: white;
+			font-size: 1.5rem;
+		}
+
+		@keyframes glow {
+			0% {
+				text-shadow: 0 0 5px #00f7ff, 0 0 10px #00f7ff, 0 0 15px #00f7ff;
+			}
+
+			100% {
+				text-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff, 0 0 30px #00f7ff;
+			}
+		}
+
+		/* EMBED AREA */
+		#embedArea {
+			display: none;
+			height: calc(100vh - 60px);
+			background: #111;
+			overflow: hidden;
+		}
+
+		iframe {
+			width: 100%;
+			height: 100%;
+			border: none;
+		}
+
+		/* SETTINGS Panel */
+		#settings {
+			position: fixed;
+			right: 0;
+			top: 0;
+			width: 280px;
+			height: 100%;
+			background: #0f0f1f;
+			display: none;
+			box-shadow: 0 0 25px #00f7ff;
+		}
+
+		#settingsHeader {
+			display: flex;
+			justify-content: space-between;
+			padding: 10px;
+			background: #111;
+		}
+
+		.toggle {
+			padding: 10px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<!-- HOME SCREEN (Visible until URL is entered) -->
+	<div id="homeScreen">
+		<h1>Experiment 404</h1>
+		<h3>By Math Time</h3>
+	</div>
+
+	<!-- URL Bar -->
+	<div id="topbar">
+		<input id="url" placeholder="Enter URL or search..." oninput="checkInput()">
+		<button onclick="openTab()">Go</button>
+		<button onclick="toggleSettings()">⚙️</button>
+	</div>
+
+	<!-- EMBED AREA (Where the URL gets embedded) -->
+	<div id="embedArea">
+		<iframe id="viewer"></iframe>
+	</div>
+
+	<!-- SETTINGS Panel -->
+	<div id="settings">
+		<div id="settingsHeader">
+			<b>Settings</b>
+			<button onclick="toggleSettings()">❌</button>
+		</div>
+
+		<div class="toggle">
+			Embed in about:blank <input type="checkbox" id="embedToggle" checked> <!-- Default unchecked -->
+		</div>
+
+		<div class="toggle">
+			Panic Key <input type="checkbox" id="panicToggle">
+    </div>
+
+			<div class="toggle">
+				Glow UI <input type="checkbox" id="glowToggle">
+    </div>
+			</div>
+
+			<script>
+				let tabs = [];
+    let currentTab = null;
+
+    // Settings with defaults
+    let settings = JSON.parse(localStorage.getItem("settings") || "{}");
+
+    settings.embedMode ??= false; // Default is false (unchecked) - embed in HTML
+    settings.panicKey ??= true;
+    settings.glowUI ??= true;
+
+    // Apply settings
+    function applySettings() {
+        document.getElementById("topbar").style.boxShadow =
+            settings.glowUI ? "0 0 20px #00f7ff" : "none";
+    }
+
+    applySettings();
+
+    // Handle checkbox changes
+    document.getElementById("embedToggle").checked = settings.embedMode;
+    document.getElementById("panicToggle").checked = settings.panicKey;
+    document.getElementById("glowToggle").checked = settings.glowUI;
+
+    document.getElementById("embedToggle").onchange = e => {
+        settings.embedMode = e.target.checked;
+        saveSettings();
+    };
+
+    document.getElementById("panicToggle").onchange = e => {
+        settings.panicKey = e.target.checked;
+        saveSettings();
+    };
+
+    document.getElementById("glowToggle").onchange = e => {
+        settings.glowUI = e.target.checked;
+        applySettings();
+        saveSettings();
+    };
+
+    // Save settings to localStorage
+    function saveSettings() {
+        localStorage.setItem("settings", JSON.stringify(settings));
+    }
+
+    // Toggle settings panel
+    function toggleSettings() {
+        let s = document.getElementById("settings");
+        s.style.display = s.style.display === "none" ? "block" : "none";
+    }
+
+    // Format URL (fixes invalid URLs)
+    function formatURL(input) {
+        input = input.trim();
+
+        if (/^https?:\/\//i.test(input)) return input;
+
+        if (input.startsWith("localhost") || input.startsWith("127.0.0.1")) {
+            return "http://" + input;
+        }
+
+        if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(input)) {
+            return "https://" + input;
+        }
+
+        return "https://www.google.com/search?q=" + encodeURIComponent(input);
+    }
+
+    // Open URL in the embed area or about:blank
+    function openTab() {
+        let input = document.getElementById("url").value;
+        if (!input) return;
+
+        let url = formatURL(input);
+
+        // Show embed area and hide the home screen
+        document.getElementById("homeScreen").style.display = "none";
+        document.getElementById("embedArea").style.display = "flex";
+
+        // If "Embed in about:blank" is checked, open the URL in a new tab
+        if (settings.embedMode) {
+            let newTab = window.open("about:blank", "_blank");
+            newTab.document.write(`
+                <html>
+                    <head>
+                        <title>Loading...</title>
+                    </head>
+                    <body>
+                        <iframe src="${url}" style="width:100vw;height:100vh;border:none;"></iframe>
+                    </body>
+                </html>
+            `);
+        } else {
+            // Embed the URL into the iframe
+            document.getElementById("viewer").src = url;
+        }
+
+        let id = Date.now();
+        tabs.push({id, url, name: "Tab"});
+        switchTab(id);
+    }
+
+    // Switch between tabs (if there are multiple open)
+    function switchTab(id) {
+        let tab = tabs.find(t => t.id === id);
+        if (!tab) return;
+
+        currentTab = id;
+        document.getElementById("viewer").src = tab.url;
+        renderTabs();
+    }
+
+    // Render the tabs (for future tabs management)
+    function renderTabs() {
+        let el = document.getElementById("tabs");
+        el.innerHTML = "";
+
+        tabs.forEach(tab => {
+            let t = document.createElement("div");
+            t.className = "tab" + (tab.id === currentTab ? " active" : "");
+
+            let name = document.createElement("span");
+            name.innerText = tab.name;
+            name.onclick = () => switchTab(tab.id);
+
+            let close = document.createElement("span");
+            close.innerText = "❌";
+            close.onclick = () => closeTab(tab.id);
+
+            t.appendChild(name);
+            t.appendChild(close);
+            el.appendChild(t);
+        });
+    }
+
+    // Close a specific tab
+    function closeTab(id) {
+        tabs = tabs.filter(t => t.id !== id);
+        renderTabs();
+    }
+
+    // Panic key behavior (press ` to reset everything)
+    document.addEventListener("keydown", e => {
+        if (e.key === "`" && settings.panicKey) {
+            document.title = "Google Docs";
+            document.getElementById("viewer").src = "https://www.google.com";
+        }
+    });
+
+    // Check if the user starts typing anything into the URL field
+    function checkInput() {
+        let input = document.getElementById("url").value;
+        if (input.length > 0) {
+            document.getElementById("homeScreen").style.display = "none"; // Hide the home screen when typing
+        }
+    }
+			</script>
+
+</body>
+
+</html></body><html>
