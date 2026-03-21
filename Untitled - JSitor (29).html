@@ -1,0 +1,151 @@
+<!doctype html><html><head></head><body><!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Math Time Video Converter</title>
+
+	<style>
+		body {
+			background: #0a0a0a;
+			color: white;
+			font-family: Arial;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+		}
+
+		.container {
+			background: #111;
+			padding: 30px;
+			border-radius: 15px;
+			box-shadow: 0 0 25px #00f0ff;
+			width: 420px;
+			text-align: center;
+		}
+
+		h1 {
+			color: #00f0ff;
+			text-shadow: 0 0 15px #00f0ff;
+		}
+
+		input,
+		select {
+			width: 90%;
+			padding: 10px;
+			margin: 10px 0;
+			border-radius: 10px;
+			border: none;
+			background: #222;
+			color: white;
+			box-shadow: 0 0 10px #00f0ff inset;
+		}
+
+		button {
+			margin-top: 15px;
+			padding: 12px 20px;
+			border: none;
+			border-radius: 10px;
+			background: #00f0ff;
+			color: black;
+			font-weight: bold;
+			cursor: pointer;
+			box-shadow: 0 0 15px #00f0ff;
+			transition: 0.2s;
+		}
+
+		button:hover {
+			transform: scale(1.05);
+			box-shadow: 0 0 30px #00f0ff;
+		}
+
+		#loading {
+			display: none;
+			margin-top: 15px;
+			color: #00f0ff;
+		}
+
+		.preview {
+			margin-top: 15px;
+			display: none;
+		}
+
+		.preview img {
+			width: 100%;
+			border-radius: 10px;
+			box-shadow: 0 0 15px #00f0ff;
+		}
+	</style>
+
+</head>
+
+<body>
+
+	<div class="container">
+		<h1>Math Time Converter</h1>
+
+		<input type="text" id="url" placeholder="Paste video link...">
+
+		<select id="format">
+        <option value="mp3">MP3 (Audio)</option>
+        <option value="mp4">MP4 (Video)</option>
+    </select>
+
+		<button onclick="convert()">Convert</button>
+
+		<div id="loading">⚡ Converting...</div>
+
+		<div class="preview" id="preview">
+			<img id="thumb">
+    </div>
+		</div>
+
+		<script>
+			function getYouTubeID(url) {
+    try {
+        const urlObj = new URL(url);
+
+        if (urlObj.hostname.includes("youtu.be")) {
+            return urlObj.pathname.slice(1);
+        }
+
+        return urlObj.searchParams.get("v");
+    } catch {
+        return null;
+    }
+}
+
+function convert() {
+    const url = document.getElementById("url").value;
+    const format = document.getElementById("format").value;
+    const loading = document.getElementById("loading");
+    const preview = document.getElementById("preview");
+    const thumb = document.getElementById("thumb");
+
+    if (!url) {
+        alert("Enter a video URL");
+        return;
+    }
+
+    // Show loading
+    loading.style.display = "block";
+
+    // Show preview if YouTube
+    const id = getYouTubeID(url);
+    if (id) {
+        thumb.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+        preview.style.display = "block";
+    }
+
+    // Start download
+    setTimeout(() => {
+        loading.style.display = "none";
+        window.location.href = `http://localhost:3000/convert?url=${encodeURIComponent(url)}&format=${format}`;
+    }, 1000);
+}
+		</script>
+
+</body>
+
+</html></body><html>
