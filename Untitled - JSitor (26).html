@@ -1,0 +1,136 @@
+<!doctype html><html><head></head><body><!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Glow Game Hub - Math</title>
+
+	<style>
+		body {
+			margin: 0;
+			font-family: Arial, sans-serif;
+			background: #0f0f0f;
+			color: white;
+		}
+
+		.glow {
+			box-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff;
+		}
+
+		.container {
+			display: flex;
+			height: 100vh;
+		}
+
+		.sidebar {
+			width: 220px;
+			background: #111;
+			padding: 15px;
+			border-right: 1px solid #222;
+		}
+
+		.category {
+			padding: 10px;
+			margin: 10px 0;
+			background: #1a1a1a;
+			border-radius: 8px;
+		}
+
+		.main {
+			flex: 1;
+			padding: 20px;
+		}
+
+		.links {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 15px;
+		}
+
+		.link-card {
+			background: #1a1a1a;
+			padding: 15px;
+			border-radius: 10px;
+			width: 150px;
+			text-align: center;
+			cursor: pointer;
+			transition: 0.2s;
+		}
+
+		.link-card:hover {
+			transform: scale(1.05);
+			background: #00f7ff;
+			color: black;
+		}
+
+		.special {
+			border: 2px solid #00f7ff;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="container">
+
+		<!-- Sidebar -->
+		<div class="sidebar glow">
+			<h2>Categories</h2>
+			<div class="category">🎮 Games</div>
+		</div>
+
+		<!-- Main -->
+		<div class="main">
+			<h2>Games</h2>
+
+			<div class="links">
+
+				<!-- ⭐ SPECIAL BUTTON (about:blank embed) -->
+				<div class="link-card glow special" onclick="openSpecial()">
+					Duck Math
+				</div>
+
+				<!-- Normal Buttons -->
+				<div class="link-card glow" onclick="window.open('https://https://lovethetrees.org/')">
+					skip
+				</div>
+
+
+				</div>
+
+			</div>
+		</div>
+
+	</div>
+
+	<script>
+		// ⭐ CHANGE THIS LINK
+const specialURL = "https://duckmath.org";
+
+function openSpecial() {
+    const newTab = window.open("about:blank", "_blank");
+
+    newTab.document.write(`
+        <html>
+        <head>
+            <title>Game</title>
+            <style>
+                body { margin: 0; background: black; }
+                iframe {
+                    border: none;
+                    width: 100vw;
+                    height: 100vh;
+                }
+            </style>
+        </head>
+        <body>
+            <iframe src="${specialURL}"></iframe>
+        </body>
+        </html>
+    `);
+}
+	</script>
+
+</body>
+
+</html></body><html>
