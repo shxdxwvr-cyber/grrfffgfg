@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trapped - Math Time</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            color: white;
+            font-family: Arial;
+        }
+
+        #menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            text-align: center;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+        }
+
+        canvas {
+            display: none;
+        }
+
+        #ui {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .slot {
+            width: 70px;
+            height: 70px;
+            border: 2px solid purple;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="menu">
+        <h1>TRAPPED</h1>
+        <p>by Math Time</p>
+        <button onclick="startGame()">PLAY</button>
+    </div>
+
+    <canvas id="game"></canvas>
+
+    <div id="ui">
+        <div class="slot" id="slotQ">Q</div>
+        <div class="slot" id="slotE">E</div>
+    </div>
+
+    <script>
+
+        // ===== SETUP =====
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+
+        let state = "menu";
+
+        let player = {
+            x: 1500, y: 1500, r: 15,
+            color: "cyan",
+            hat: null,
+            alive: true
+        };
+
+        let cam = { x: 0, y: 0 };
+        let keys = {};
+
+        let stage = 1, maxStage = 0, levelType = "";
+        let enemies = [], bullets = [], mines = [], blocks = [];
+
+        let abilities = { left: null, right: null };
+        let cooldowns = { explosion: 0 };
+
+        let colors = ["cyan", "lime", "yellow", "orange", "pink", "white", "red", "blue", "purple"];
+        let colorIndex = 0;
+
+        let currentReward = null;
+
+        // ===== INPUT =====
+        onkeydown = e => {
+            keys[e.key] = true;
+
+            if (player.alive) {
+                if (e.key === "q") useAbility("left");
+                if (e.key === "e") useAbility("right");
+            }
+
+            if (e.key === "r" && !player.alive) respawn();
+        };
+
+        onkeyup = e => keys[e.key] = false;
+
+        // ===== START =====
+        function startGame() {
+            document.getElementById("menu").style.display = "none";
+            canvas.style.display = "block";
+            state = "home";
+            loop();
+        }
+
+        // ===== MOVE =====
+        function move() {
+
+            if (!player.alive) return;
+
+            let sp = 5;
+
+            let oldX = player.x;
+            let oldY = player.y;
+
+            if (keys["w"] || keys["ArrowUp"]) player.y -= sp;
+            if (keys["s"] || keys["ArrowDown"]) player.y += sp;
+            if (keys["a"] || keys["ArrowLeft"]) player.x -= sp;
+            if (keys["d"] || keys["ArrowRight"]) player.x += sp;
+
+            player.x = Math.max(50, Math.min(player.x, 2950));
+            player.y = Math.max(50, Math.min(player.y, 2950));
+
+            // block collision
+            for (let b of blocks) {
+                if (player.x > b.x && player.x < b.x + b.w &&
+                    player.y > b.y && player.y < b.y + b.h) {
+
+                    if (oldX < b.x) player.x = b.x - 1;
+                    if (oldX > b.x + b.w) player.x = b.x + b.w + 1;
+
+                    if (oldY < b.y) player.y = b.y - 1;
+                    if (oldY > b.y + b.h) player.y = b.y + b.h + 1;
+                }
+            }
+
+            cam.x = player.x - canvas.width / 2;
+            cam.y = player.y - canvas.height / 2;
+        }
+
+        // ===== HOME =====
+        function drawHome() {
+
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, 3000, 3000);
+            drawBarrier();
+
+            drawPortal(400, 1000, "lightwork", 10);
+            drawPortal(800, 1000, "war", 15);
+            drawPortal(1200, 1000, "death", 300);
+            drawPortal(1600, 1000, "exo", 200);
+            drawPortal(2000, 1000, "minefield", 10);
+
+            // shack
+            ctx.fillStyle = "#333";
+            ctx.fillRect(1200, 1600, 200, 150);
+
+            ctx.fillStyle = "white";
+            ctx.fillText("SHACK", 1230, 1580);
+            ctx.fillText("C = Color", 1210, 1780);
+            ctx.fillText("H = Hat", 1210, 1820);
+
+            // inside shack
+            if (player.x > 1200 && player.x < 1400 && player.y > 1600 && player.y < 1750) {
+
+                if (keys["c"]) {
+                    colorIndex = (colorIndex + 1) % colors.length;
+                    player.color = colors[colorIndex];
+                }
+
+                if (keys["h"]) {
+                    player.hat = player.hat ? null : "helmet";
+                }
+            }
+        }
+
+        // ===== PORTAL =====
+        function drawPortal(x, y, type, stages) {
+
+            ctx.fillStyle = "purple";
+            ctx.beginPath();
+            ctx.arc(x, y, 40, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "white";
+            ctx.fillText(type, x - 40, y + 60);
+
+            if (dist(player.x, player.y, x, y) < 50) {
+                startLevel(type, stages);
+            }
+        }
+
+        // ===== START LEVEL =====
+        function startLevel(type, stages) {
+            state = "level";
+            stage = 1;
+            maxStage = stages;
+            levelType = type;
+
+            spawnStage();
+
+            player.x = 200;
+            player.y = 1500;
+        }
+
+        // ===== SPAWN =====
+        function spawnStage() {
+
+            enemies = []; bullets = []; mines = []; blocks = [];
+
+            for (let i = 0; i < 5; i++) {
+                blocks.push({
+                    x: Math.random() * 2500 + 200,
+                    y: Math.random() * 2000 + 200,
+                    w: 120, h: 20
+                });
+            }
+
+            let count = 0;
+            if (levelType === "war") count = 2;
+            if (levelType === "death") count = 8;
+            if (levelType === "exo") count = 4;
+
+            for (let i = 0; i < count; i++) {
+                enemies.push({
+                    x: Math.random() * 2500 + 200,
+                    y: Math.random() * 2000 + 200,
+                    cool: 0,
+                    alive: true
+                });
+            }
+
+            if (levelType === "minefield") {
+                for (let i = 0; i < 15; i++) {
+                    mines.push({
+                        x: Math.random() * 2500 + 200,
+                        y: Math.random() * 2000 + 200
+                    });
+                }
+            }
+        }
+
+        // ===== UPDATE =====
+        function updateEnemies() {
+
+            for (let e of enemies) {
+                if (!e.alive) continue;
+
+                e.cool--;
+                if (e.cool <= 0) {
+
+                    let dx = player.x - e.x;
+                    let dy = player.y - e.y;
+                    let len = Math.hypot(dx, dy);
+
+                    bullets.push({
+                        x: e.x, y: e.y,
+                        vx: dx / len * 5,
+                        vy: dy / len * 5
+                    });
+
+                    e.cool = 80;
+                }
+            }
+
+            for (let b of bullets) {
+                b.x += b.vx;
+                b.y += b.vy;
+
+                if (dist(player.x, player.y, b.x, b.y) < player.r) {
+                    die();
+                }
+            }
+
+            for (let m of mines) {
+                if (dist(player.x, player.y, m.x, m.y) < 20) {
+                    explode(m.x, m.y, 100);
+                    die();
+                }
+            }
+        }
+
+        // ===== EXPLOSION =====
+        function explode(x, y, r) {
+            for (let e of enemies) {
+                if (dist(x, y, e.x, e.y) < r) {
+                    e.alive = false;
+                    setTimeout(() => e.alive = true, 10000);
+                }
+            }
+        }
+
+        // ===== LEVEL =====
+        function drawLevel() {
+
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, 3000, 3000);
+            drawBarrier();
+
+            ctx.fillStyle = "#555";
+            for (let b of blocks) {
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+            }
+
+            // back
+            ctx.fillStyle = "purple";
+            ctx.fillRect(0, 1400, 50, 200);
+
+            // exit
+            ctx.fillStyle = "lime";
+            ctx.fillRect(2900, 1400, 50, 200);
+
+            if (player.x < 60 && player.y > 1400 && player.y < 1600) {
+                if (stage === 1) {
+                    state = "home";
+                    player.x = 1500;
+                } else {
+                    stage--;
+                    spawnStage();
+                    player.x = 200;
+                }
+            }
+
+            if (player.x > 2900 && player.y > 1400 && player.y < 1600) {
+                nextStage();
+            }
+
+            // enemies
+            ctx.fillStyle = "red";
+            for (let e of enemies) {
+                if (e.alive) {
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // bullets
+            ctx.fillStyle = "orange";
+            for (let b of bullets) {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // mines
+            ctx.fillStyle = "purple";
+            for (let m of mines) {
+                ctx.beginPath();
+                ctx.arc(m.x, m.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // ===== NEXT =====
+        function nextStage() {
+
+            stage++;
+
+            if (stage > maxStage) {
+
+                if (levelType === "minefield") currentReward = "explosion";
+                else if (levelType === "exo") currentReward = "revive";
+                else if (levelType === "death") currentReward = "shield";
+                else if (levelType === "war") currentReward = "helmet";
+                else currentReward = null;
+
+                state = "reward";
+                player.x = 1500;
+                return;
+            }
+
+            spawnStage();
+            player.x = 200;
+        }
+
+        // ===== REWARD =====
+        function drawReward() {
+
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, 3000, 3000);
+            drawBarrier();
+
+            if (currentReward) {
+
+                ctx.fillStyle = "yellow";
+                ctx.beginPath();
+                ctx.arc(1500, 1000, 80, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = "white";
+                ctx.fillText(currentReward.toUpperCase(), 1400, 1200);
+
+                giveAbility(currentReward);
+                currentReward = null;
+            }
+
+            ctx.fillStyle = "purple";
+            ctx.fillRect(1400, 1800, 200, 100);
+
+            ctx.fillStyle = "white";
+            ctx.fillText("HOME", 1450, 1860);
+
+            if (player.x > 1400 && player.x < 1600 && player.y > 1800) {
+                state = "home";
+                player.x = 1500;
+            }
+        }
+
+        // ===== ABILITIES =====
+        function giveAbility(a) {
+
+            if (!a) return;
+
+            if (a === "helmet") {
+                player.hat = "helmet";
+                return;
+            }
+
+            if (!abilities.left) abilities.left = a;
+            else abilities.right = a;
+
+            updateSlots();
+        }
+
+        function useAbility(slot) {
+
+            let a = abilities[slot];
+
+            if (a === "explosion" && cooldowns.explosion <= 0) {
+                explode(player.x, player.y, 200);
+                cooldowns.explosion = 300;
+            }
+
+            if (a === "shield") {
+                player.shield = true;
+                setTimeout(() => player.shield = false, 3000);
+            }
+
+            if (a === "revive") {
+                player.revive = true;
+            }
+        }
+
+        // ===== PLAYER =====
+        function drawPlayer() {
+
+            ctx.fillStyle = player.alive ? player.color : "red";
+
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (player.hat) {
+                ctx.fillStyle = "gray";
+                ctx.fillRect(player.x - 10, player.y - 30, 20, 10);
+            }
+        }
+
+        // ===== LEVEL TEXT (FIXED) =====
+        function drawLevelText() {
+
+            ctx.fillStyle = "white";
+            ctx.font = "30px Arial";
+            ctx.textAlign = "center";
+
+            if (state === "home") {
+                ctx.fillText("HOME", canvas.width / 2, 40);
+            }
+            if (state === "level") {
+                ctx.fillText(levelType.toUpperCase() + " " + stage, canvas.width / 2, 40);
+            }
+            if (state === "reward") {
+                ctx.fillText("REWARD ROOM", canvas.width / 2, 40);
+            }
+
+            ctx.textAlign = "start";
+        }
+
+        // ===== DEATH TEXT =====
+        function drawDeathText() {
+            if (!player.alive) {
+                ctx.fillStyle = "red";
+                ctx.font = "50px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("PRESS R TO RESPAWN", canvas.width / 2, canvas.height / 2);
+                ctx.textAlign = "start";
+            }
+        }
+
+        // ===== UI =====
+        function updateSlots() {
+            document.getElementById("slotQ").innerText = abilities.left || "Q";
+            document.getElementById("slotE").innerText = abilities.right || "E";
+        }
+
+        // ===== BARRIER =====
+        function drawBarrier() {
+            ctx.strokeStyle = "purple";
+            ctx.lineWidth = 10;
+            ctx.strokeRect(0, 0, 3000, 3000);
+        }
+
+        // ===== LOOP =====
+        function loop() {
+
+            move();
+
+            if (state === "level" && player.alive) {
+                updateEnemies();
+            }
+
+            cooldowns.explosion--;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+            ctx.translate(-cam.x, -cam.y);
+
+            if (state === "home") drawHome();
+            if (state === "level") drawLevel();
+            if (state === "reward") drawReward();
+
+            drawPlayer();
+
+            ctx.restore();
+
+            // ?? UI LAYER
+            drawLevelText();
+            drawDeathText();
+
+            requestAnimationFrame(loop);
+        }
+
+        // ===== UTIL =====
+        function dist(x1, y1, x2, y2) {
+            return Math.hypot(x1 - x2, y1 - y2);
+        }
+
+        function die() {
+            player.alive = false;
+        }
+
+        function respawn() {
+            player.alive = true;
+            state = "home";
+            player.x = 1500;
+        }
+
+    </script>
+
+</body>
+</html>
