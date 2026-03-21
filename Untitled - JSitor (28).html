@@ -1,0 +1,184 @@
+<!doctype html><html><head></head><body><!DOCTYPE html>
+<html>
+
+<head>
+	<title>Math Time Shows</title>
+
+	<style>
+		body {
+			margin: 0;
+			font-family: Arial;
+			background: #0a0a0a;
+			color: white;
+			display: flex;
+		}
+
+		/* Sidebar */
+		#sidebar {
+			width: 250px;
+			background: #111;
+			padding: 10px;
+			box-shadow: 0 0 15px cyan;
+			overflow-y: auto;
+		}
+
+		#sidebar h2 {
+			text-align: center;
+			color: cyan;
+		}
+
+		.show {
+			padding: 10px;
+			margin: 5px 0;
+			background: #1a1a1a;
+			cursor: pointer;
+			border-radius: 8px;
+			box-shadow: 0 0 10px cyan;
+			position: relative;
+		}
+
+		.show:hover {
+			background: #222;
+		}
+
+		/* Remove button */
+		.remove {
+			position: absolute;
+			right: 5px;
+			top: 5px;
+			color: red;
+			cursor: pointer;
+		}
+
+		/* Main */
+		#main {
+			flex: 1;
+			padding: 20px;
+			text-align: center;
+		}
+
+		video {
+			width: 80%;
+			max-height: 70vh;
+			border-radius: 10px;
+			box-shadow: 0 0 20px cyan;
+		}
+
+		/* Upload */
+		#uploadBox {
+			margin-top: 20px;
+			padding: 10px;
+			border: 2px dashed cyan;
+			border-radius: 10px;
+			box-shadow: 0 0 10px cyan;
+		}
+
+		button {
+			background: black;
+			color: cyan;
+			border: 1px solid cyan;
+			padding: 10px;
+			cursor: pointer;
+			box-shadow: 0 0 10px cyan;
+			border-radius: 5px;
+		}
+
+		button:hover {
+			background: cyan;
+			color: black;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div id="sidebar">
+		<h2>Math Time Shows</h2>
+		<div id="showList"></div>
+	</div>
+
+	<div id="main">
+		<h1>🎬 Math Time Shows</h1>
+
+		<video id="player" controls></video>
+
+		<div id="uploadBox">
+			<p>Upload MP4</p>
+			<input type="file" id="fileInput" accept="video/mp4">
+			<br><br>
+			<button onclick="uploadVideo()">Upload</button>
+		</div>
+	</div>
+
+	<script>
+		// BUILT-IN SHOWS (EDIT THESE)
+let shows = [
+    {
+        name: "Example Show",
+        src: "https://www.w3schools.com/html/mov_bbb.mp4"
+    }
+];
+
+// Load shows
+function loadShows() {
+    const list = document.getElementById("showList");
+    list.innerHTML = "";
+
+    shows.forEach((show, index) => {
+        const div = document.createElement("div");
+        div.className = "show";
+        div.innerText = show.name;
+
+        div.onclick = () => {
+            document.getElementById("player").src = show.src;
+        };
+
+        // Remove button (only for uploaded)
+        if (show.uploaded) {
+            const remove = document.createElement("span");
+            remove.className = "remove";
+            remove.innerText = "✖";
+            remove.onclick = (e) => {
+                e.stopPropagation();
+                shows.splice(index, 1);
+                loadShows();
+            };
+            div.appendChild(remove);
+        }
+
+        list.appendChild(div);
+    });
+}
+
+// Upload MP4
+function uploadVideo() {
+    const file = document.getElementById("fileInput").files[0];
+
+    if (!file) {
+        alert("Pick an MP4 file");
+        return;
+    }
+
+    if (file.type !== "video/mp4") {
+        alert("Only MP4 allowed");
+        return;
+    }
+
+    const url = URL.createObjectURL(file);
+
+    shows.push({
+        name: file.name,
+        src: url,
+        uploaded: true
+    });
+
+    loadShows();
+}
+
+// Init
+loadShows();
+	</script>
+
+</body>
+
+</html></body><html>
