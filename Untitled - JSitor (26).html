@@ -1,128 +1,138 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Math Stealth Hub</title>
 
-<head></head>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0a0a0a;
+    color: white;
+}
+
+/* Layout */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background: #111;
+    padding: 20px;
+    border-right: 1px solid #222;
+}
+
+.sidebar h1 {
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Main */
+.main {
+    flex: 1;
+    padding: 20px;
+}
+
+/* Grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+/* Game Card */
+.card {
+    background: #151515;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid #222;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    background: #00f7ff;
+    color: black;
+    box-shadow: 0 0 15px #00f7ff;
+}
+</style>
+</head>
 
 <body>
-	<!DOCTYPE html>
-	<html lang="en">
 
-	<head>
-		<meta charset="UTF-8">
-		<title>Glow Game Hub - Math</title>
+<div class="container">
 
-		<style>
-			body {
-				margin: 0;
-				font-family: Arial, sans-serif;
-				background: #0f0f0f;
-				color: white;
-			}
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h1>🕶️ Link Hub</h1>
+        <h4>By Math Time</h4>
+        <p style="font-size:12px;color:#888;">All games open in about:blank</p>
+    </div>
 
-			.glow {
-				box-shadow: 0 0 10px #00f7ff, 0 0 20px #00f7ff;
-			}
+    <!-- Main -->
+    <div class="main">
+        <h2>Games</h2>
 
-			.container {
-				display: flex;
-				height: 100vh;
-			}
+        <div class="grid">
 
-			.sidebar {
-				width: 220px;
-				background: #111;
-				padding: 15px;
-				border-right: 1px solid #222;
-			}
+            <!-- GAMES -->
+            <div class="card" onclick="openGame('https://duckmath.org')">
+                Duck Math
+            </div>
 
-			.category {
-				padding: 10px;
-				margin: 10px 0;
-				background: #1a1a1a;
-				border-radius: 8px;
-			}
+            <div class="card" onclick="openGame('https://krunker.io')">
+                Krunker
+            </div>
 
-			.main {
-				flex: 1;
-				padding: 20px;
-			}
+            <div class="card" onclick="openGame('https://lovethetrees.org/')">
+                Skip
+            </div>
 
-			.links {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 15px;
-			}
+            <div class="card" onclick="openGame('https://gn-math.dev')">
+                GN Math
+            </div>
 
-			.link-card {
-				background: #1a1a1a;
-				padding: 15px;
-				border-radius: 10px;
-				width: 150px;
-				text-align: center;
-				cursor: pointer;
-				transition: 0.2s;
-			}
+            <div class="card" onclick="openGame('https://www.coolmathgames.com/')">
+                Cool Math
+            </div>
+                        <div class="card" onclick="openGame('https://gameshtml5.xyz/')">
+                Games HTML5
+            </div>
+                                    <div class="card" onclick="openGame('https://math-games-4u.com/')">
+                Gaming Wrld
+            </div>
 
-			.link-card:hover {
-				transform: scale(1.05);
-				background: #00f7ff;
-				color: black;
-			}
+            <!-- ADD MORE BELOW -->
+            <!--
+            <div class="card" onclick="openGame('https://your-link.com')">
+                Game Name
+            </div>
+            -->
 
-			.special {
-				border: 2px solid #00f7ff;
-			}
-		</style>
-	</head>
+        </div>
+    </div>
 
-	<body>
+</div>
 
-		<div class="container">
+<script>
+function openGame(url) {
+    const tab = window.open("about:blank", "_blank");
 
-			<!-- Sidebar -->
-			<div class="sidebar glow">
-				<h2>Categories</h2>
-				<div class="category">🎮 Games</div>
-			</div>
-
-			<!-- Main -->
-			<div class="main">
-				<h2>Games</h2>
-
-				<div class="links">
-
-					<!-- ⭐ SPECIAL BUTTON (about:blank embed) -->
-					<div class="link-card glow special" onclick="openSpecial()">
-						Duck Math
-					</div>
-					
-		
-					<!-- Normal Buttons -->
-					<div class="link-card glow" onclick="window.open('https://lovethetrees.org/')">
-						skip
-					</div>
-
-
-				</div>
-
-			</div>
-		</div>
-
-		</div>
-
-		<script>
-			// ⭐ CHANGE THIS LINK
-const specialURL = "https://duckmath.org";
-
-function openSpecial() {
-    const newTab = window.open("about:blank", "_blank");
-				
-
-
-    newTab.document.write(`
+    tab.document.write(`
         <html>
         <head>
-            <title>Game</title>
+            <title>Loading...</title>
             <style>
                 body { margin: 0; background: black; }
                 iframe {
@@ -133,15 +143,12 @@ function openSpecial() {
             </style>
         </head>
         <body>
-            <iframe src="${specialURL}"></iframe>
+            <iframe src="${url}" allowfullscreen></iframe>
         </body>
         </html>
     `);
 }
-		</script>
+</script>
 
-	</body>
-
-	</html>
 </body>
-<html>
+</html>
