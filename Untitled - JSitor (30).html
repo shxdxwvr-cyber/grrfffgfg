@@ -1,0 +1,154 @@
+<!doctype html><html><head></head><body><!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Game AI</title>
+
+	<style>
+		body {
+			background: #0b0f1a;
+			color: white;
+			font-family: Arial;
+		}
+
+		#chatbox {
+			width: 320px;
+			height: 420px;
+			border: 2px solid #00aaff;
+			overflow-y: auto;
+			padding: 10px;
+			background: #111;
+			margin: 20px;
+		}
+
+		.input-area {
+			margin: 20px;
+		}
+
+		input {
+			width: 230px;
+			padding: 8px;
+		}
+
+		button {
+			padding: 8px;
+			background: #00aaff;
+			border: none;
+			color: white;
+			cursor: pointer;
+		}
+
+		.bot {
+			color: #00aaff;
+		}
+
+		.user {
+			color: #00ff99;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h2>👾Math Time AI✅</h2>
+
+	<div id="chatbox"></div>
+
+	<div class="input-area">
+		<input id="input" placeholder="Say anything...">
+		<button onclick="send()">Send</button>
+	</div>
+
+	<script>
+		function send() {
+  let input = document.getElementById("input");
+  let text = input.value.trim();
+  if (!text) return;
+
+  add("You: " + text, "user");
+
+  let reply = AI(text);
+
+  setTimeout(() => {
+    add("AI: " + reply, "bot");
+  }, 300);
+
+  input.value = "";
+}
+
+function add(text, type) {
+  let chat = document.getElementById("chatbox");
+  let div = document.createElement("div");
+  div.className = type;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function AI(input) {
+  let text = input.toLowerCase();
+
+  // 🔹 Specific useful responses
+  if (text.includes("hello") || text.includes("hi"))
+    return "Hey 👋 I'm your game assistant. Ask me anything.";
+
+  if (text.includes("game"))
+    return "You're on a game site 😎 Want recommendations or help?";
+
+  if (text.includes("stealth"))
+    return "Stealth games are about staying hidden, timing, and strategy.";
+
+  if (text.includes("lag") || text.includes("slow"))
+    return "Try refreshing, lowering settings, or closing tabs.";
+
+  if (text.includes("who made"))
+    return "This site was made by Math Time 🔥";
+
+  if (text.includes("help"))
+    return "I can help with games, controls, or anything on this site.";
+
+  // 🔹 Smart pattern replies (THIS makes it respond to anything)
+
+  if (text.endsWith("?"))
+    return "Good question 🤔 I think it depends, but try exploring more in the game.";
+
+  if (text.includes("i like"))
+    return "Nice 😎 sounds like you enjoy that.";
+
+  if (text.includes("i hate"))
+    return "Yeah that can be annoying sometimes.";
+
+  if (text.includes("why"))
+    return "There could be a few reasons for that, maybe game design or performance.";
+
+  if (text.includes("how"))
+    return "Usually it's about timing and practice. Want more details?";
+
+  if (text.includes("what"))
+    return "It could mean different things depending on the game.";
+
+  // 🔹 Random “AI-like” thinking responses
+  let smartReplies = [
+    "Interesting... tell me more 👀",
+    "That actually sounds important.",
+    "I think I understand what you mean.",
+    "Hmm... try interacting with the game more.",
+    "That depends on how you're playing.",
+    "Not gonna lie, that's kinda cool.",
+    "I’m still learning, but that sounds interesting.",
+    "You might discover more if you explore around."
+  ];
+
+  return smartReplies[Math.floor(Math.random() * smartReplies.length)];
+}
+
+// ENTER KEY
+document.getElementById("input").addEventListener("keypress", e => {
+  if (e.key === "Enter") send();
+});
+	</script>
+
+</body>
+
+</html></body><html>
